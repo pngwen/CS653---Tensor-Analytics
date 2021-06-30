@@ -1,0 +1,263 @@
+% Uncomment for handout
+%\def\HANDOUT{}
+
+
+\ifdefined\HANDOUT
+\documentclass[handout]{beamer}
+\usepackage{pgfpages}
+\pgfpagesuselayout{4 on 1}[letterpaper,landscape,border shrink=5mm]
+\else
+\documentclass{beamer}
+\fi
+
+\mode<presentation>
+{
+  \usetheme{Warsaw}
+  \definecolor{sered}{rgb}{0.78, 0.06, 0.18}
+  \definecolor{richblack}{rgb}{0.0, 0.0, 0.0}
+  \setbeamercolor{structure}{fg=sered,bg=richblack}
+  %\setbeamercovered{transparent}
+}
+
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{times}
+\usepackage[T1]{fontenc}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage[export]{adjustbox}
+\usepackage{fancyvrb}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{esvect}
+
+\newcommand{\imagesource}[1]{{\centering\hfill\break\hbox{\scriptsize Image Source:\thinspace{\tiny\itshape #1}}\par}}
+\newcommand{\image}[2]{%
+        \begin{center}
+        \includegraphics[max height = 0.55\textheight, max width = \textwidth]{images/#1}
+        \linebreak
+        {\tiny Image Source:\thinspace{\tiny #2}}
+        \end{center}
+}
+
+\newenvironment{code}{%
+ \VerbatimEnvironment
+ \begin{adjustbox}{max width=\textwidth, max height=0.7\textheight}
+ \begin{BVerbatim}
+  }{
+  \end{BVerbatim}
+ \end{adjustbox}
+}
+
+\title{03 - High Dimensional Models}
+
+
+\author{Robert Lowe}
+
+\institute[Southeast Missouri State University] % (optional, but mostly needed)
+{
+  Department of Computer Science\\
+  Southeast Missouri State University
+}
+
+\date[]{}
+\subject{}
+
+\pgfdeclareimage[height=1.0cm]{university-logo}{images/semo-logo}
+\logo{\pgfuseimage{university-logo}}
+
+
+
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>{Outline}
+    \tableofcontents[currentsection]
+  \end{frame}
+}
+
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+
+% Structuring a talk is a difficult task and the following structure
+% may not be suitable. Here are some rules that apply for this
+% solution: 
+
+% - Exactly two or three sections (other than the summary).
+% - At *most* three subsections per section.
+% - Talk about 30s to 2min per frame. So there should be between about
+%   15 and 30 frames, all told.
+
+% - A conference audience is likely to know very little of what you
+%   are going to talk about. So *simplify*!
+% - In a 20min talk, getting the main ideas across is hard
+%   enough. Leave out details, even if it means being less precise than
+%   you think necessary.
+% - If you omit details that are vital to the proof/implementation,
+%   just say so once. Everybody will be happy with that.
+
+\section{A Little Review of Statistics}
+
+\begin{frame}{Random Variable}
+   \begin{itemize}
+       \item A variable $X$ is random if it is the outcome of some random process.
+       \item For the purpose of modeling, we treat all observed variables as random.
+       \item We are typically interested in the distribution of values of a random variable, especially:
+       \begin{itemize}
+           \item Center of the distribution.
+           \item Spread of the distribution.
+       \end{itemize}
+   \end{itemize} 
+\end{frame}
+
+\begin{frame}{Center}
+    \begin{itemize}
+        \item We typically use the arithmetic mean as our measure of the center of a distribution:
+        \[
+        \bar{X} = \dfrac{1}{n}\sum_{i=1}^n X_i
+        \]
+        \item In most distributions, values tend to be close to the arithmetic mean.
+           So we often think of this as the expected value of $X$.
+           \[
+           E[X] = \bar{X}
+           \]
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Variance}
+    \begin{itemize}
+        \item Variance is the expected squared deviation of a random variable from its mean.
+        \[
+        \mathrm{Var}(X) = E[(X-\bar{X})^2]
+        \]
+        \item Assuming that the expected squared deviation is the mean squared deviation:
+        \[
+        \mathrm{Var}(X) = \dfrac{1}{n} \sum_{i=1}^n (X_i - \bar{X})^2
+        \]
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Standard Deviation}
+    \begin{itemize}
+        \item Standard Deviation is the unit correction of the variance.
+        \[
+        \sigma_x = \sqrt{\mathrm{Var}(X)}
+        \]
+        \item Or if we want to write a formula that looks good on a chalkboard:
+        \[
+        \sigma_x = \sqrt{\dfrac{1}{n} \sum_{i=1}^n (X_i - \bar{X})^2}
+        \]
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Normal Distribution}
+    \begin{columns}
+    \column{0.6\textwidth}
+    \begin{itemize}
+        \item The infamous bell curve!
+        \item Specified $N(\bar{X}, \sigma)$
+        \item Standard normal distribution: $N(0, 1)$
+        \item Z-Scores are the projection into this distribution.
+        \[
+        z = \dfrac{X-\bar{X}}{\sigma_x}
+        \]
+    \end{itemize}
+    
+    \column{0.4\textwidth}
+    \image{normal}{\href{https://en.wikipedia.org/wiki/Normal_distribution#/media/File:Normal_Distribution_PDF.svg}{Wikipedia}}
+    \end{columns}
+\end{frame}
+
+
+\section{Multi-Variant Models}
+
+\begin{frame}{Variance and Modelling}
+    \begin{itemize}
+        \item A model is a mathematical object which accounts for variance.
+        \item The goal is to make random variables predictable.
+        \item In multi-variant models, we want to identify causal relationships between variables.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Pairs of Variables}
+    \begin{columns}
+    \column{0.8\textwidth}
+        \begin{itemize}
+            \item Covariance measures the tendancy of two variables to change in similar ways.
+            \[
+            \mathrm{cov}(X, Y) = E[(X-E[X])(Y-E[Y])]
+            \]
+            \item Correlation is the measure of dependence between two random variables.
+            \[
+            \mathrm{corr} = \dfrac{\mathrm{cov}(X, Y)}{\sigma_x\sigma_y}
+            \]
+        \end{itemize}
+    \column{0.2\textwidth}
+        \image{covariance}{\href{https://en.wikipedia.org/wiki/Covariance#/media/File:Covariance_trends.svg}{Wikipedia}}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Covariance Matrix}
+    \[
+    K=
+    \left[ 
+    \begin{array}{cccc}
+        \mathrm{cov}(v_1, v_1) &  \mathrm{cov}(v_1, v_2) & \ldots & \mathrm{cov}(v_1, v_n) \\
+        \mathrm{cov}(v_2, v_1) &  \mathrm{cov}(v_2, v_2) & \ldots & \mathrm{cov}(v_2, v_n) \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \mathrm{cov}(v_n, v_1) &  \mathrm{cov}(v_n, v_2) & \ldots & \mathrm{cov}(v_n, v_n) \\
+    \end{array}
+    \right]
+    \]
+    \begin{itemize}
+        \item Given a feature vector $\vv{v}$ of length $n$.
+        \item Compute the the covariance of each pair, and organize them in a matrix:
+        \[
+        K_{i,j} = \mathrm{cov}(v_i, v_j)
+        \]
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{The Curse of Dimensionality}
+    \begin{itemize}
+        \item Suppose we have four variables in our feature vector: $\vv{v} = \langle x, y, z, w \rangle$.
+        \item We want to use these variables to predict some outcome $r$.
+        \item We could have single variable relationships:
+            $r = f(x)$, $r=f(y)$, $r=f(z)$, or $r=f(w)$
+        \item We could have two variable relationships:
+            $r = f(x, y)$, $r = f(x, z)$, $r = f(x, w)$, $r = f(y, z)$, $\ldots$
+        \item We could have three variable relationships:
+            $r = f(x, y, z)$, $r=f(x, y, w)$, $\ldots$
+        \item We could have a four variable relationship:
+            $r = f(x, y, z, w)$
+        \item We could even have no relationship! 
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Dimension Reduction}
+    \begin{itemize}
+        \item What if we could establish a new vector space for our observations?
+        \item What if that space had fewer dimensions?
+        \item Remember, the goal is to account for the variance in our observations!
+        \item One method of dimension reduction is Principal Component Anlaysis (PCA).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Assignments}
+    \begin{itemize}
+        \item Read \href{https://setosa.io/ev/principal-component-analysis/}{Principal Component Analysis Explained Visually}
+        \item Homework Assignment: \href{https://canvas.semo.edu/courses/8742/assignments/82308}{Principal Component Analysis with NumPy}
+    \end{itemize}
+\end{frame}
+
+\end{document}

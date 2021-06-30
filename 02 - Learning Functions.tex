@@ -1,0 +1,308 @@
+% Uncomment for handout
+\def\HANDOUT{}
+
+
+\ifdefined\HANDOUT
+\documentclass[handout]{beamer}
+\usepackage{pgfpages}
+\pgfpagesuselayout{4 on 1}[letterpaper,landscape,border shrink=5mm]
+\else
+\documentclass{beamer}
+\fi
+
+\mode<presentation>
+{
+  \usetheme{Warsaw}
+  \definecolor{sered}{rgb}{0.78, 0.06, 0.18}
+  \definecolor{richblack}{rgb}{0.0, 0.0, 0.0}
+  \setbeamercolor{structure}{fg=sered,bg=richblack}
+  %\setbeamercovered{transparent}
+}
+
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{times}
+\usepackage[T1]{fontenc}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage[export]{adjustbox}
+\usepackage{fancyvrb}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{esvect}
+
+\newcommand{\imagesource}[1]{{\centering\hfill\break\hbox{\scriptsize Image Source:\thinspace{\tiny\itshape #1}}\par}}
+\newcommand{\image}[2]{%
+        \begin{center}
+        \includegraphics[max height = 0.55\textheight, max width = \textwidth]{images/#1}
+        \linebreak
+        {\tiny Image Source:\thinspace{\tiny #2}}
+        \end{center}
+}
+
+\newenvironment{code}{%
+ \VerbatimEnvironment
+ \begin{adjustbox}{max width=\textwidth, max height=0.7\textheight}
+ \begin{BVerbatim}
+  }{
+  \end{BVerbatim}
+ \end{adjustbox}
+}
+
+\title{02 - Learning Functions}
+
+
+\author{Robert Lowe}
+
+\institute[Southeast Missouri State University] % (optional, but mostly needed)
+{
+  Department of Computer Science\\
+  Southeast Missouri State University
+}
+
+\date[]{}
+\subject{}
+
+\pgfdeclareimage[height=1.0cm]{university-logo}{images/semo-logo}
+\logo{\pgfuseimage{university-logo}}
+
+
+
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>{Outline}
+    \tableofcontents[currentsection]
+  \end{frame}
+}
+
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+
+% Structuring a talk is a difficult task and the following structure
+% may not be suitable. Here are some rules that apply for this
+% solution: 
+
+% - Exactly two or three sections (other than the summary).
+% - At *most* three subsections per section.
+% - Talk about 30s to 2min per frame. So there should be between about
+%   15 and 30 frames, all told.
+
+% - A conference audience is likely to know very little of what you
+%   are going to talk about. So *simplify*!
+% - In a 20min talk, getting the main ideas across is hard
+%   enough. Leave out details, even if it means being less precise than
+%   you think necessary.
+% - If you omit details that are vital to the proof/implementation,
+%   just say so once. Everybody will be happy with that.
+
+\section{Feature Vectors}
+\begin{frame}{Feature Vectors}
+    \begin{columns}
+    \column{0.5\textwidth}
+        \begin{itemize}
+            \item Suppose we want to learn how to respond to a sequence of $n$ variables.
+            \item We can treat them as a vector.
+            \item Each case in our set becomes a vector.
+        \end{itemize}
+    
+    \column{0.5\textwidth}
+        \[
+        \vv{v} = \left(
+        \begin{array}{c}
+            v_1 \\
+            v_2 \\
+            \vdots\\
+            v_n
+        \end{array}
+        \right)
+        \]
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Objective Function}
+    \begin{center}
+    \begin{adjustbox}{height=0.1\textheight}
+    \[
+    f : \vv{v} \mapsto r
+    \]
+    \end{adjustbox}
+    \end{center}
+    \begin{description}
+        \item[$f$] A function which maps feature vectors to responses
+        \item[$\vv{v}$] The feature vector.
+        \item[$r$] The response object. This could be a vector, label, scalar value, really any object.
+    \end{description}
+\end{frame}
+
+\section{A Little Functional Analysis}
+
+\begin{frame}{Learning a Function}
+    \[
+    f : \vv{v} \mapsto r
+    \]
+    \begin{itemize}
+        \item For our purposes, ``functional analysis'' will be defined as learning the objective function for a set.
+        \item Goals
+        \begin{itemize}
+            \item Compute Responses for Unknown Cases
+            \item Identify Structures in Known Cases
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{A Na\"ive Approach}
+    \[
+    \left[
+    \begin{array}{cccc}
+    v_{11} & v_{12} & \ldots & v_{1n} \\
+    v_{21} & v_{22} & \ldots & v_{2n} \\
+    \vdots & \vdots & \vdots & \vdots \\
+    v_{m1} & v_{m2} & \ldots & v_{mn} \\
+    \end{array}
+    \right]
+    \left[
+    \begin{array}{c} 
+        w_1 \\
+        w_2 \\
+        \vdots \\
+        w_n
+    \end{array}
+    \right] =
+    \left[
+    \begin{array}{c} 
+        r_1 \\
+        r_2 \\
+        \vdots \\
+        r_m
+    \end{array}
+    \right]
+    \]
+    
+    Attempt to combine variables as a weighted sum.
+    \begin{enumerate}
+        \item Treat $m$ case vectors as row vectors in an $m \times n$ matrix, $V$.
+        \item Arrange weights as an $n$ element column vector, $W$.
+        \item Arrange case responses as an $m$ element column vector, $R$.
+        \item Solve for the weights.
+        \begin{align*}
+            VW &= R \\
+            V^{-1}VW &= V^{-1}R \\
+            W &= V^{-1}R
+        \end{align*}
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{The Trouble}
+    \begin{itemize}
+        \item We are making a big assumption! We are assuming that $\vv{r}$ is computable as:
+        \[
+        f(\vv{v}) = \sum_{i=1}^n w_i v_i
+        \]
+        \item For any linear system, one of the following must be true:
+        \begin{enumerate}
+            \item The system has no solutions.
+            \item The system has exactly one solution.
+            \item The system has infinitely many solutions.
+        \end{enumerate}
+        \item A linear system built from real data will almost never be directly solvable!
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Working Towards a Solution}
+    \begin{itemize}
+        \item Let's rewrite our system of equations:
+        \[
+        r = 
+        w_1 
+        \left( 
+        \begin{array}{c}
+        v_{11} \\
+        v_{21} \\
+        \vdots \\
+        v_{m1} 
+        \end{array}
+        \right)
+        +
+        w_2 
+        \left( 
+        \begin{array}{c}
+        v_{12} \\
+        v_{22} \\
+        \vdots \\
+        v_{m2} 
+        \end{array}
+        \right)
+        + \ldots
+        w_2 
+        \left( 
+        \begin{array}{c}
+        v_{1n} \\
+        v_{2n} \\
+        \vdots \\
+        v_{mn} 
+        \end{array}
+        \right)
+        \]
+        \item We can also ``tweak'' our objects!
+        \begin{itemize}
+            \item $w_i$ can be any mathematical object. For instance, a function.
+            \item We can define our own concept of scalar multiplication\footnotemark[1].
+            \item We can define our own concept of vector addition\footnotemark[1].
+        \end{itemize}
+        \footnotetext[1]{Some restrictions may apply!}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Enter Vector Spaces}
+    \begin{itemize}
+        \item A vector space consists of three objects:
+        \begin{description}
+            \item[$V$] A set. Elements $\vv{v} \in V$ are called vectors.
+            \item[$\mathbb{F}$] A field. Elements $s \in \mathbb{F}$ are called scalars.
+            \item[$\cdot$] Scalar multiplication operator: $s \cdot \vv{v}$.
+            \item[$+$] Vector addition operation: $\vv{u} + \vv{v}$
+        \end{description}
+        \item A vector space must satisfy these axioms:
+        \begin{itemize}
+            \item Associativity of Addition] $(\vv{u} + \vv{v}) + \vv{w} = \vv{u} + (\vv{v} + \vv{w})$
+            \item Zero  $\exists \vv{0}$ s.t. $\vv{u} + \vv{0} = \vv{u}$ 
+            \item Negatives  $\forall \vv{u} \in V \exists -\vv{u}$ s.t. $\vv{u} + (-\vv{u}) = \vv{0}$
+            \item Associativity of Multiplication $(ab)\vv{u} = a(b\vv{u})$ 
+            \item Disributivity  $(a+b)\vv{u} = a\vv{u} + b\vv{u}$ and $a\vv{u} + b\vv{u} = (a+b)\vv{u}$
+            \item Unitary  $1\vv{u} = \vv{u}$
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{How will we use vector spaces?}
+    \begin{itemize}
+        \item We can often cast objects in such a way that the weight vector is solvable.
+        \item Ultimately, we will explore tensors, which are multilinear maps:
+        \[
+        f : V_1 \times V_2 \times \ldots \times V_n \mapsto W 
+        \]
+        Where $V_i$ and $W$ are vector spaces.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Further Reading}
+    I recommend reading over the following material before our next lecture:
+    \begin{itemize}
+        \item \href{https://machinelearningmastery.com/gentle-introduction-vectors-machine-learning/}{A Gentle Introduction to Vectors for Machine Learning}
+        \item \href{http://www.math.toronto.edu/gscott/WhatVS.pdf}{What is a vector space?} by Geoffrey Scott
+        \item \href{https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html}{NumPy's Linear Algebra Solver}
+    \end{itemize}
+\end{frame}
+
+
+\end{document}
